@@ -5,7 +5,7 @@ date: "2024-10-12"
 output: github_document
 ---
 
-Libraries 
+Libraries and options
 
 ```{r}
 library(tidyverse)
@@ -17,20 +17,29 @@ library(spDataLarge)
 library(tmap)
 library(leaflet)
 library(knitr)
+library(gganimate)
+library(lubridate)
+
+options(rgl.useNULL = TRUE)
+library(rgl)
+library(rayshader)
 ```
 
-Load in data and join
+Load in data
 
 ```{r}
+# Loading data for the project locations
 location <- read_csv("data/project_locations.csv") %>% 
   clean_names()
 
+# Loading data for the project summaries, which show project progress
 summary <- read_csv("data/project_summary.csv") %>% 
   clean_names() %>% 
   select(-c("agency_name", "category_description", 
             "element_description", "project_description",
             "location_indicator", "capital_plan"))
 
+# Joining the project location and progress data
 project_data <- location %>% 
   left_join(summary, by = "project_number") %>% 
   filter(current_quarter_flag == "CQ") %>% 
@@ -48,59 +57,222 @@ project_data <- location %>%
   )
 
 project_data <- project_data %>% 
-  mutate(project_id = paste(project_number, project_number_sequence, sep = "")) %>% 
-  mutate(year = current_start_year) %>% 
-  filter(!is.na(year),
-         !is.na(current_completion_year))
+  mutate(project_id = paste(project_number, project_number_sequence, sep = "")) %>%
+  filter(!is.na(current_start_year), !is.na(current_completion_year)) %>% 
+  mutate(current_start_month = if_else(is.na(current_start_month), 
+                                       01, 
+                                       current_start_month),
+         current_completion_month = if_else(is.na(current_completion_month),
+                                            01,
+                                            current_completion_month)) %>% 
+  mutate(start_date = as.Date(paste(current_start_year, 
+                                           current_start_month, 
+                                           01,
+                                           sep = "-"), "%Y-%m-%d")) %>% 
+  mutate(end_date = as.Date(paste(current_completion_year, 
+                                         current_completion_month, 
+                                          01,
+                                  sep = "-"), "%Y-%m-%d")) %>% 
+  mutate(date = start_date,
+         project_left = 100) %>% 
+  # Start in 2015 for now
+  filter(start_date > "2014-12-01") %>% 
+  select(project_id, category_description, latitude, longitude, location,
+         start_date, end_date, date, project_left)
+
+timer <- 0
 
 for (i in unique(project_data$project_id)) {
-  # get number of years project is active
+  timer <- timer + 1
+  print(timer)
   curr_row_num <- which(project_data$project_id == i)
   curr_row <- project_data[curr_row_num,]
-  start <- project_data$current_start_year[curr_row_num]
-  end <- project_data$current_completion_year[curr_row_num]
-  num_years <- end - start
-  for (j in 1:num_years) {
-    curr_row$year <- start + j
-    project_data[nrow(project_data) + 1,] = curr_row
+  # Get number of months the  project is active
+  start <- project_data$start_date[curr_row_num]
+  end <- project_data$end_date[curr_row_num]
+  num_months <- interval(start, end) %/% months(1)
+  if(num_months > 0) {
+    rate <- 100/num_months
+    for (j in 1:num_months) {
+      curr_row$date <- start %m+% months(j)
+      curr_row$project_left <- if_else(j == num_months,
+                                     0,
+                                     (num_months - j)*rate)
+      project_data[nrow(project_data) + 1,] = curr_row
+    }
   }
 }
+
+lines <- st_read("nyc_subways/lines.shp")
+
+lines_lim <- lines %>% 
+  filter(!(str_detect(name, "-")))
+
+journey_data1 <- read_csv("data/journey_time.csv")
+journey_data2 <- read_csv("data/journey_time_2020.csv")
+
+journey_data <- rbind(journey_data1, journey_data2) %>% 
+  filter(period == "peak") %>% 
+  select(-period) %>% 
+  filter(line != "Systemwide") %>% 
+  mutate(line = case_when(line %in% c("S Fkln", "S Rock", "S 42nd") ~ "S",
+                          line == "JZ" ~ "J-Z",
+                          TRUE ~ line)) %>% 
+  mutate(ajt = total_apt + total_att) %>% 
+  select(month, line, ajt) %>% 
+  mutate(month = as.character(month))
+
+dates <- as.character(seq(as.Date("2015-01-01"), as.Date("2024-08-01"), by="months"))
+
+grab_ajt <- function(line_name, date) {
+  
+  ajt <- journey_data %>% 
+    filter(month == date) %>% 
+    filter(line == line_name) %>% 
+    pull(ajt)
+  
+  if (length(ajt) == 0) {
+    ajt <- 0
+  }
+  
+  return(ajt)
+}
+
+add_new_row <- function(line_combo, ajt_val) {
+  journey_data %>% 
+    add_row(month = date,
+            line = line_combo,
+            ajt = ajt_val)
+}
+
+for (date in dates) {
+  
+  ajts <- map(.x = list(B = "B", D = "D", FF = "F", M = "M", N = "N", Q = "Q", 
+                   R = "R", A = "A", C = "C", W = "W", E = "E", l1 = "1",
+                   l2 = "2", l3 = "3", l4 = "4", l5 = "5", l6 = "6"), 
+              .f = grab_ajt,
+              date)
+  
+  journey_data <- add_new_row("B-D", mean(ajts$B, ajts$D))
+  journey_data <- add_new_row("B-D-F-M", mean(ajts$B, ajts$D, ajts$FF, ajts$M)) 
+  journey_data <- add_new_row("N-Q-R", mean(ajts$N, ajts$Q, ajts$R)) 
+  journey_data <- add_new_row("N-Q", mean(ajts$N, ajts$Q)) 
+  journey_data <- add_new_row("N-R", mean(ajts$N, ajts$R)) 
+  journey_data <- add_new_row("F-M", mean(ajts$FF, ajts$M)) 
+  journey_data <- add_new_row("A-C", mean(ajts$A, ajts$C)) 
+  journey_data <- add_new_row("1-2-3", mean(ajts$l1, ajts$l2, ajts$l3)) 
+  journey_data <- add_new_row("4-5-6", mean(ajts$l4, ajts$l5, ajts$l6)) 
+  journey_data <- add_new_row("N-W", mean(ajts$N, ajts$W)) 
+  journey_data <- add_new_row("2-3", mean(ajts$l2, ajts$l3)) 
+  journey_data <- add_new_row("4-5", mean(ajts$l4, ajts$l5))
+  journey_data <- add_new_row("A-C-E", mean(ajts$A, ajts$C, ajts$E)) 
+  journey_data <- add_new_row("N-Q-R-W", mean(ajts$N, ajts$Q, ajts$R, ajts$W)) 
+  journey_data <- add_new_row("N-R-W", mean(ajts$N, ajts$R, ajts$W))
+  journey_data <- add_new_row("R-W", mean(ajts$R, ajts$W))
+  
+}
+
+line_data <- lines %>% 
+  rename(line = name) %>% 
+  select(-c(url, id, objectid, rt_symbol)) %>% 
+  left_join(journey_data, by = "line") %>%
+  rename(date = month) %>% 
+  mutate(date = as.factor(date))
 ```
 
-How many types of projects are there?
-
-```{r}
-unique(project_data$category_description)
-```
 
 Mapping
 
 Data for NYC https://data.cityofnewyork.us/City-Government/Borough-Boundaries/tqmj-j8zm
 
+Using `tmap`
+
 ```{r}
-nyc <- st_read("nyc_base_map/nyc.shp")
-  
-# ggplot(nyc) +
-#   geom_sf() +
-#   geom_sf(data = proj_locs, aes(color = category_description ), size = 1, ,
-#           alpha = 0.1) +
-#   coord_sf(xlim = c(-74.3 , -73.7), ylim = c(40.45, 40.92), expand = F) +
-#   theme_bw() +
-#   theme(legend.position="none")
+nyc <- st_read("nyc_base_map/nyc.shp") %>% 
+  filter(boro_name != "Staten Island")
 
 proj_locs <- st_as_sf(project_data, coords = c("longitude", "latitude"), 
-                      crs = 4326, agr = "constant")
+                      crs = 4326, agr = "constant") %>% 
+  filter(date <= "2024-08-01") %>% 
+  mutate(date = as.factor(date))
 
-urb_anim <- tm_shape(nyc) + tm_polygons() + 
-  tm_shape(proj_locs) + tm_symbols(fill = "category_description") +
-  tm_legend(show=FALSE) +
-  tm_facets_wrap(by = "year", 
-                 nrow = 1, ncol = 1, free.coords = FALSE) 
+# Have to have the same years for the layering to work
 
+tmap_options(facet.max = 200)
 
-tmap_animation(urb_anim, filename = "urb_anim.gif", delay = 25)
+urb_anim <- tm_shape(nyc) + 
+  tm_polygons(fill = "#faf3e5") + 
+  tm_shape(line_data) +
+  tm_lines(col = "ajt", lwd = 3.5) +
+  tm_scale_intervals(style = "pretty") +
+  tm_facets_wrap(by = "date",
+                 nrow = 1, ncol = 1) +
+  tm_shape(proj_locs) + 
+  tm_symbols(col = "category_description", size = "project_left",
+             fill_alpha = 0.2, fill = "category_description") +
+  tm_polygons() + 
+  tm_facets_wrap(by = "date",
+                 nrow = 1, ncol = 1) +
+  tm_legend(show = F)
 
-include_graphics("urb_anim.gif")
+tmap_animation(urb_anim, filename = "urb_anim.gif", delay = 20)
 ```
 
+Using `ggplot`
+
+```{r}
+# map_with_animation <- ggplot(nyc) +
+#   geom_sf() +
+#   geom_sf(data = proj_locs, 
+#           aes(color = category_description, 
+#               size = completion)
+#           ) +
+#   coord_sf(xlim = c(-74.3 , -73.7), ylim = c(40.45, 40.92), expand = F) +
+#   theme_bw() +
+#   theme(legend.position="none") +
+#   theme(axis.title.x=element_blank(),
+#         axis.text.x=element_blank(),
+#         axis.ticks.x=element_blank(),
+#         axis.title.y=element_blank(),
+#         axis.text.y=element_blank(),
+#         axis.ticks.y=element_blank()) +
+#   transition_time(year) +
+#   ggtitle('Year: {frame_time}',
+#           subtitle = 'Frame {frame} of {nframes}')
+# 
+# num_years <- max(project_data$year) - min(project_data$year) + 1
+# 
+# anim_save("ggplot_map.gif", map_with_animation, nframes = num_years, fps = 2)
+# 
+# animate(map_with_animation, nframes = num_years, fps = 2)
+# 
+# 
+# 
+# include_graphics("urb_anim.gif")
+```
+
+Using `rayshader`
+
+```{r}
+# proj_locs_eg <- proj_locs %>% filter(year == 2015)
+# 
+# map1 <- ggplot(nyc) +
+#   geom_sf() +
+#   geom_sf(data = proj_locs_eg, 
+#           aes(color = completion)) +
+#   coord_sf(xlim = c(-74.3 , -73.7), ylim = c(40.45, 40.92), expand = F) +
+#   theme(axis.title.x=element_blank(),
+#         axis.text.x=element_blank(),
+#         axis.ticks.x=element_blank(),
+#         axis.title.y=element_blank(),
+#         axis.text.y=element_blank(),
+#         axis.ticks.y=element_blank())
+# 
+# plot_gg(map1, width = 3.5, raytrace = T, preview = TRUE)
+# 
+# plot_gg(map1, width = 3.5, multicore = TRUE, windowsize = c(800, 800), 
+#         zoom = 0.85, phi = 35, theta = 30, sunangle = 225, soliddepth = -100)
+# Sys.sleep(0.2)
+# render_snapshot(clear = TRUE)
+```
 

@@ -1,0 +1,13 @@
+name: "Safiya Sirota"
+output_dir: "."
+navbar:
+  title: "Home"
+  right:
+    - text: "Methods"
+      href: methods.html
+    - icon: fa-github fa-lg
+      href: https://github.com/safiyasirota/mta_challenge
+
+output:
+  html_document:
+    theme: darkly
