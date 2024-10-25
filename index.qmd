@@ -1,0 +1,16 @@
+---
+title: "MTA Data Challenge"
+format: html
+---
+
+&nbsp;
+
+<center><img src="urb_anim.gif" style="width:70%"/></center>
+
+&nbsp;
+
+It’s undeniable that the New York City subway is a living, breathing organism, inextricable from its co-dependent human creators. We wanted to bring to life this entity in flux: a mechanical body requiring constant maintenance, navigating its predetermined course at varying speeds.
+
+The subway runs all hours of the day–except for, that is, the continual closing of different sections for maintenance. The functioning of these “limbs” requires repair of its muscles and organs–be it trackwork, structural improvements, or the repair of its signaling & communications systems. Though incredibly inconvenient for its riders, it seems objectively logical that a body in constant motion needs recovery for sustained function. Does it ever get tired? Does it ever need rest?
+
+In considering our transit system as a being requiring dedicated care for its continued success, we hope to invite empathy towards the system itself, for those who maintain it, and for our fellow riders–while the City works to advance the function and resilience of this critical service.
