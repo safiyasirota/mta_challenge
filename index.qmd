@@ -1,16 +1,30 @@
 ---
-title: "MTA Data Challenge"
+title: "A Body at Work"
+author:
+  - Safiya Sirota
+  - Meghan Timmons
 format: html
 ---
-
-&nbsp;
-
-<center><img src="urb_anim.gif" style="width:70%"/></center>
-
-&nbsp;
-
 It’s undeniable that the New York City subway is a living, breathing organism, inextricable from its co-dependent human creators. We wanted to bring to life this entity in flux: a mechanical body requiring constant maintenance, navigating its predetermined course at varying speeds.
 
 The subway runs all hours of the day–except for, that is, the continual closing of different sections for maintenance. The functioning of these “limbs” requires repair of its muscles and organs–be it trackwork, structural improvements, or the repair of its signaling & communications systems. Though incredibly inconvenient for its riders, it seems objectively logical that a body in constant motion needs recovery for sustained function. Does it ever get tired? Does it ever need rest?
 
 In considering our transit system as a being requiring dedicated care for its continued success, we hope to invite empathy towards the system itself, for those who maintain it, and for our fellow riders–while the City works to advance the function and resilience of this critical service.
+
+&nbsp;
+
+<center><img src="urb_anim.gif" style="width:100%"/></center>
+
+&nbsp;
+
+
+We leveraged 6 datasets to create this map:
+
+<ol>
+  <li><a href="https://data.ny.gov/Transportation/Metropolitan-Transportation-Authority-MTA-Capital-/wcsa-vkhf/about_data">Metropolitan Transportation Authority (MTA) Capital Dashboard Project Locations</a></li>
+  <li><a href="https://data.ny.gov/Transportation/Metropolitan-Transportation-Authority-MTA-Capital-/ehz8-ag3n/about_data">Metropolitan Transportation Authority (MTA) Capital Dashboard Agencies Summary - All Load Dates</a></li>
+  <li><a href="https://data.ny.gov/Transportation/MTA-Subway-Customer-Journey-Focused-Metrics-2015-2/r7qk-6tcy/about_data">MTA Subway Customer Journey-Focused Metrics: 2015-2019</a></li>
+  <li><a href="https://data.ny.gov/Transportation/MTA-Subway-Customer-Journey-Focused-Metrics-Beginn/4apg-4kt9/about_data">MTA Subway Customer Journey-Focused Metrics: Beginning 2020</a></li>
+  <li><a href="https://data.cityofnewyork.us/Transportation/Subway-Lines/3qz8-muuu">Subway Lines | NYC Open Data</a></li>
+  <li><a href="https://data.cityofnewyork.us/City-Government/Borough-Boundaries/tqmj-j8zm">Borough Boundaries | NYC Open Data</a></li>
+</ol>

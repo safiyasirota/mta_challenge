@@ -1,30 +1,29 @@
 ---
-title: "MTA Data Challenge"
+title: "Code for Map Creation"
 format: 
   html:
     code-fold: true
     toc: true
 ---
 
-```{css, echo=FALSE}
+```{css, echo = FALSE}
 .basic {
   border: 3px solid lightblue;
 }
 ```
 
-```{r, echo=FALSE}
+```{r, echo = FALSE}
 knitr::opts_chunk$set(class.source = "basic")
 ```
 
-# Code for Map Creation
-
-This page shows all the code written to create the map `.gif` on the home page. Our methodology written in words can be found under the **Methods** tab.
+This page shows all the code written to create the map `.gif` on the home page, along with descriptions of how the data are processed and used. You can click on the play buttons that say "Code" to show the code. All raw files and version control can be found in the public Github repo linked in the top right corner.
 
 ## Loading libraries
 
 These are the libraries needed to run the code.
 
 ```{r, warning = FALSE, message = FALSE}
+
 library(tidyverse)
 library(janitor)
 library(sf)
@@ -34,15 +33,18 @@ library(spDataLarge)
 library(tmap)
 library(leaflet)
 library(knitr)
-library(gganimate)
 library(lubridate)
 ```
 
 ## Loading data
 
-We combine 4 data sets to create the points and lines on the final map. The first two datasets provide information on capital projects. We combine these two datasets so that we know the timeline, location, and type of each project. The second two datasets provides information on additional journey time (AJT) for each subway line for each month. These datasets are stratified by year (2015-2019) and 2020 on, so they need to be combined.
+We combine 4 data sets to create the points and lines on the final map. The first two datasets (1 & 2 on the home page) provide information on capital (infrastructure investment) projects. We combine these two datasets so that we know the timeline, location, and type of each project (e.g., passenger station upgrades, signals & communication updates). Some types of projects are excluded if they don't directly affect subway transport, and some categories are combined for simplicity.
+
+The second two datasets (3 & 4 on the home page) provide information on additional journey time (AJT) for each subway line for each month. The AJT denotes the average additional time in minutes, over the scheduled time, that customers spend onboard and waiting for a train. These datasets are stratified by year. One contains data from 2015-2019, and the other from 2020 on, so they need to be combined. 
+
 
 ```{r, warning = FALSE, message = FALSE}
+
 # Loading data for the project locations
 location <- read_csv("data/project_locations.csv") %>% clean_names()
 
@@ -74,24 +76,34 @@ project_data <- location %>%
                                       "BUSES", 
                                       "SHOPS & YARDS"))
 
+# Loading the journey data from all years
 journey_data1 <- read_csv("data/journey_time.csv")
 journey_data2 <- read_csv("data/journey_time_2020.csv")
 
+# Combining the journey data and simplifying to later join with geographic data
 journey_data <- rbind(journey_data1, journey_data2) %>% 
+  clean_names() %>% 
   filter(period == "peak") %>% 
   select(-period) %>% 
   filter(line != "Systemwide") %>% 
   mutate(line = case_when(line %in% c("S Fkln", "S Rock", "S 42nd") ~ "S",
                           line == "JZ" ~ "J-Z",
                           TRUE ~ line)) %>% 
-  mutate(ajt = total_apt + total_att) %>% 
+  mutate(ajt = additional_platform_time + additional_train_time) %>% 
   select(month, line, ajt) %>% 
   mutate(month = as.character(month))
 ```
 
-Now we have two datasets: one for projects (circles on the map) and one for additional journey time per line (lines on the map). However, we have to do some data manipulation so that the datasets include entries for each project, the completion percentage of the project, each line, and each AJT amount for each month and each year. To do this, we write some for loops to add entries to the datasets.
+Now we have two datasets: one for projects (circles on the map) and one for AJT per line (lines on the map). However, we have to do some data manipulation.
+
+For the `projects` dataset, we have to edit it so that it includes entries for each project for each year and month, along with the completion percentage of the project, which we estimate to be linear over time from the start date to the end date listed in the dataset.
+
+For the `AJT` dataset, we already have an entry for each line for each month of the year, but in order to mesh it properly with the geographical data, we have to make sure the line names correspond, and therefore have to average some data over multiple lines. For example, the geographical dataset for the subway lines has an "A-C-E" entry, while the AJT dataset only has data on the individual A, C, and E lines. Therefore the "line" on the map that represents the A-C-E is an average of the AJT for each individual line.
+
+The methods to complete both of these tasks are shown in the code chunk below.
 
 ```{r, warning = FALSE, message = FALSE}
+
 # Reformatting the date variable here to make the iteration easier
 project_data <- project_data %>% 
   mutate(project_id = paste(project_number, project_number_sequence, sep = "")) %>%
@@ -112,19 +124,20 @@ project_data <- project_data %>%
                                   sep = "-"), "%Y-%m-%d")) %>% 
   mutate(date = start_date,
          project_left = 100) %>% 
-  # Start in 2015 because this is where the AJT data starts
+  # Starting in 2015 because this is where the AJT data starts
   filter(start_date > "2014-12-01") %>% 
   select(project_id, category_description, latitude, longitude, location,
          start_date, end_date, date, project_left)
 
-# Begin the iteration to add rows to the dataset
+# Beginning the iteration to add the proper additional rows to the dataset
 for (i in unique(project_data$project_id)) {
   curr_row_num <- which(project_data$project_id == i)
   curr_row <- project_data[curr_row_num,]
-  # Get number of months the project is active
+  # Getting number of months the project is active
   start <- project_data$start_date[curr_row_num]
   end <- project_data$end_date[curr_row_num]
   num_months <- interval(start, end) %/% months(1)
+  # Adding extra rows for each month, with completetion % estimate
   if(num_months > 0) {
     rate <- 100/num_months
     for (j in 1:num_months) {
@@ -137,8 +150,10 @@ for (i in unique(project_data$project_id)) {
   }
 }
 
+
 dates <- as.character(seq(as.Date("2015-01-01"), as.Date("2024-08-01"), by="months"))
 
+# Averaging out certain lines so AJT data corresponds to the line geo data
 grab_ajt <- function(line_name, date) {
   
   ajt <- journey_data %>% 
@@ -187,23 +202,25 @@ for (date in dates) {
 }
 ```
 
-Finally, we use shape data to be able to map the subway lines and the location of the projects in NYC.
+Finally, we import shape data so we can map NYC (5 on the home page) and the subway lines (6 on the home page) properly. This geographical data is appropriately combined with the datasets we created above in order to produce the final map later.
 
-```{r, warning = FALSE, message = FALSE}
+```{r, warning = FALSE, message = FALSE, eval = FALSE}
 
+# Importing geo data for subway lines
 lines <- st_read("nyc_subways/lines.shp")
 
-# We exclude Staten Island since there are no subway data there
+# Importing geo data for the base map of NYC
+# Excluding Staten Island since there are no subway data there
 nyc <- st_read("nyc_base_map/nyc.shp") %>% 
   filter(boro_name != "Staten Island")
 
-# Turn the project data into a form that can be mapped
+# Turning the project data into a form that can be mapped
 proj_locs <- st_as_sf(project_data, coords = c("longitude", "latitude"), 
                       crs = 4326, agr = "constant") %>% 
   filter(date <= "2024-08-01") %>% 
   mutate(date = as.factor(date))
 
-# Combine the AJT data with the geography of the lines so it can be mapped
+# Combining the AJT data with the geography of the lines so it can be mapped
 line_data <- lines %>% 
   rename(line = name) %>% 
   select(-c(url, id, objectid, rt_symbol)) %>% 
@@ -216,26 +233,44 @@ line_data <- lines %>%
 
 Now we use the `tmap` package to create the final map.
 
-```{r, warning = FALSE, message = FALSE}
+```{r, warning = FALSE, message = FALSE, eval = FALSE}
+
+# Renaming variables in each dataset to format the map legend correctly
+line_data_clean <- line_data %>% 
+  rename(`Additional journey time (mins)` = ajt)
+
+proj_locs_clean <- proj_locs %>% 
+  mutate(category_description = str_to_title(category_description)) %>% 
+  rename(`% of project left` = project_left,
+         `Type of improvement` = category_description)
 
 # Making sure our final .gif includes all the frames
 tmap_options(facet.max = 200)
 
-# Create the map
+# Creating the map
 urb_anim <- tm_shape(nyc) + 
+  # NYC base map
   tm_polygons(fill = "white") + 
-  tm_shape(line_data) +
-  tm_lines(col = "ajt", lwd = 3.5, palette = "heat" ) +
+  # Subway lines, colored by AJT
+  tm_shape(line_data_clean) +
+  tm_lines(col = "Additional journey time (mins)", lwd = 3.5, palette = "heat") +
   tm_scale_intervals(style = "pretty") +
   tm_facets_wrap(by = "date",
                  nrow = 1, ncol = 1) +
-  tm_shape(proj_locs) + 
-  tm_symbols(fill = "category_description", size = "project_left",
+  # Capital projects, colored by type, sized by completion
+  tm_shape(proj_locs_clean) + 
+  tm_symbols(fill = "Type of improvement", 
+             size = "% of project left",
              fill_alpha = 0.5, col_alpha = 0) +
   tm_polygons() + 
   tm_facets_wrap(by = "date",
-                 nrow = 1, ncol = 1)
+                 nrow = 1, ncol = 1) +
+  # Legend features
+  tm_layout(legend.outside = TRUE, 
+            legend.outside.position = 'bottom',
+            legend.title.fontface = 'bold')
 
-# tmap_animation(urb_anim, filename = "urb_anim.gif", delay = 30)
+# Save the gif (commented out to not overwrite current gif)
+# tmap_animation(urb_anim, filename = "urb_anim.gif", delay = 27)
 ```
 

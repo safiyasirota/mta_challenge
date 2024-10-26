@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>MTA Data Challenge – Home</title>
+<title>Code for Map Creation – Map</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -113,7 +113,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
     <a class="navbar-brand" href="./index.html">
-    <span class="navbar-title">Home</span>
+    <span class="navbar-title">Map</span>
     </a>
   </div>
             <div id="quarto-search" class="" title="Search"></div>
@@ -122,11 +122,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </button>
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
-  <li class="nav-item">
-    <span class="nav-link">
-<span class="menu-text">Methods</span>
-    </span>
-  </li>  
   <li class="nav-item">
     <a class="nav-link active" href="./eda.html" aria-current="page"> 
 <span class="menu-text">Code</span></a>
@@ -154,12 +149,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#code-for-map-creation" id="toc-code-for-map-creation" class="nav-link active" data-scroll-target="#code-for-map-creation">Code for Map Creation</a>
-  <ul class="collapse">
-  <li><a href="#loading-libraries" id="toc-loading-libraries" class="nav-link" data-scroll-target="#loading-libraries">Loading libraries</a></li>
+  <li><a href="#loading-libraries" id="toc-loading-libraries" class="nav-link active" data-scroll-target="#loading-libraries">Loading libraries</a></li>
   <li><a href="#loading-data" id="toc-loading-data" class="nav-link" data-scroll-target="#loading-data">Loading data</a></li>
   <li><a href="#mapping" id="toc-mapping" class="nav-link" data-scroll-target="#mapping">Mapping</a></li>
-  </ul></li>
   </ul>
 </nav>
     </div>
@@ -168,7 +160,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">MTA Data Challenge</h1>
+<h1 class="title">Code for Map Creation</h1>
 </div>
 
 
@@ -192,9 +184,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 }
 </style>
 </div>
-<section id="code-for-map-creation" class="level1">
-<h1>Code for Map Creation</h1>
-<p>This page shows all the code written to create the map <code>.gif</code> on the home page. Our methodology written in words can be found under the <strong>Methods</strong> tab.</p>
+<p>This page shows all the code written to create the map <code>.gif</code> on the home page, along with descriptions of how the data are processed and used. You can click on the play buttons that say “Code” to show the code. All raw files and version control can be found in the public Github repo linked in the top right corner.</p>
 <section id="loading-libraries" class="level2">
 <h2 class="anchored" data-anchor-id="loading-libraries">Loading libraries</h2>
 <p>These are the libraries needed to run the code.</p>
@@ -210,14 +200,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tmap)</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaflet)</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gganimate)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
 <section id="loading-data" class="level2">
 <h2 class="anchored" data-anchor-id="loading-data">Loading data</h2>
-<p>We combine 4 data sets to create the points and lines on the final map. The first two datasets provide information on capital projects. We combine these two datasets so that we know the timeline, location, and type of each project. The second two datasets provides information on additional journey time (AJT) for each subway line for each month. These datasets are stratified by year (2015-2019) and 2020 on, so they need to be combined.</p>
+<p>We combine 4 data sets to create the points and lines on the final map. The first two datasets (1 &amp; 2 on the home page) provide information on capital (infrastructure investment) projects. We combine these two datasets so that we know the timeline, location, and type of each project (e.g., passenger station upgrades, signals &amp; communication updates). Some types of projects are excluded if they don’t directly affect subway transport, and some categories are combined for simplicity.</p>
+<p>The second two datasets (3 &amp; 4 on the home page) provide information on additional journey time (AJT) for each subway line for each month. The AJT denotes the average additional time in minutes, over the scheduled time, that customers spend onboard and waiting for a train. These datasets are stratified by year. One contains data from 2015-2019, and the other from 2020 on, so they need to be combined.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -252,22 +242,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">"BUSES"</span>, </span>
 <span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>                                      <span class="st">"SHOPS &amp; YARDS"</span>))</span>
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>journey_data1 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/journey_time.csv"</span>)</span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>journey_data2 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/journey_time_2020.csv"</span>)</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>journey_data <span class="ot">&lt;-</span> <span class="fu">rbind</span>(journey_data1, journey_data2) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(period <span class="sc">==</span> <span class="st">"peak"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>period) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(line <span class="sc">!=</span> <span class="st">"Systemwide"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">line =</span> <span class="fu">case_when</span>(line <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"S Fkln"</span>, <span class="st">"S Rock"</span>, <span class="st">"S 42nd"</span>) <span class="sc">~</span> <span class="st">"S"</span>,</span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>                          line <span class="sc">==</span> <span class="st">"JZ"</span> <span class="sc">~</span> <span class="st">"J-Z"</span>,</span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>                          <span class="cn">TRUE</span> <span class="sc">~</span> line)) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ajt =</span> total_apt <span class="sc">+</span> total_att) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(month, line, ajt) <span class="sc">%&gt;%</span> </span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">month =</span> <span class="fu">as.character</span>(month))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Loading the journey data from all years</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>journey_data1 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/journey_time.csv"</span>)</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>journey_data2 <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/journey_time_2020.csv"</span>)</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Combining the journey data and simplifying to later join with geographic data</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>journey_data <span class="ot">&lt;-</span> <span class="fu">rbind</span>(journey_data1, journey_data2) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">clean_names</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(period <span class="sc">==</span> <span class="st">"peak"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>period) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(line <span class="sc">!=</span> <span class="st">"Systemwide"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">line =</span> <span class="fu">case_when</span>(line <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"S Fkln"</span>, <span class="st">"S Rock"</span>, <span class="st">"S 42nd"</span>) <span class="sc">~</span> <span class="st">"S"</span>,</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>                          line <span class="sc">==</span> <span class="st">"JZ"</span> <span class="sc">~</span> <span class="st">"J-Z"</span>,</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>                          <span class="cn">TRUE</span> <span class="sc">~</span> line)) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">ajt =</span> additional_platform_time <span class="sc">+</span> additional_train_time) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(month, line, ajt) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">month =</span> <span class="fu">as.character</span>(month))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Now we have two datasets: one for projects (circles on the map) and one for additional journey time per line (lines on the map). However, we have to do some data manipulation so that the datasets include entries for each project, the completion percentage of the project, each line, and each AJT amount for each month and each year. To do this, we write some for loops to add entries to the datasets.</p>
+<p>Now we have two datasets: one for projects (circles on the map) and one for AJT per line (lines on the map). However, we have to do some data manipulation.</p>
+<p>For the <code>projects</code> dataset, we have to edit it so that it includes entries for each project for each year and month, along with the completion percentage of the project, which we estimate to be linear over time from the start date to the end date listed in the dataset.</p>
+<p>For the <code>AJT</code> dataset, we already have an entry for each line for each month of the year, but in order to mesh it properly with the geographical data, we have to make sure the line names correspond, and therefore have to average some data over multiple lines. For example, the geographical dataset for the subway lines has an “A-C-E” entry, while the AJT dataset only has data on the individual A, C, and E lines. Therefore the “line” on the map that represents the A-C-E is an average of the AJT for each individual line.</p>
+<p>The methods to complete both of these tasks are shown in the code chunk below.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -291,128 +287,109 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                                  <span class="at">sep =</span> <span class="st">"-"</span>), <span class="st">"%Y-%m-%d"</span>)) <span class="sc">%&gt;%</span> </span>
 <span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> start_date,</span>
 <span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>         <span class="at">project_left =</span> <span class="dv">100</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Start in 2015 because this is where the AJT data starts</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Starting in 2015 because this is where the AJT data starts</span></span>
 <span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(start_date <span class="sc">&gt;</span> <span class="st">"2014-12-01"</span>) <span class="sc">%&gt;%</span> </span>
 <span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(project_id, category_description, latitude, longitude, location,</span>
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>         start_date, end_date, date, project_left)</span>
 <span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Begin the iteration to add rows to the dataset</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co"># Beginning the iteration to add the proper additional rows to the dataset</span></span>
 <span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> <span class="fu">unique</span>(project_data<span class="sc">$</span>project_id)) {</span>
 <span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  curr_row_num <span class="ot">&lt;-</span> <span class="fu">which</span>(project_data<span class="sc">$</span>project_id <span class="sc">==</span> i)</span>
 <span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  curr_row <span class="ot">&lt;-</span> project_data[curr_row_num,]</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Get number of months the project is active</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Getting number of months the project is active</span></span>
 <span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  start <span class="ot">&lt;-</span> project_data<span class="sc">$</span>start_date[curr_row_num]</span>
 <span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  end <span class="ot">&lt;-</span> project_data<span class="sc">$</span>end_date[curr_row_num]</span>
 <span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  num_months <span class="ot">&lt;-</span> <span class="fu">interval</span>(start, end) <span class="sc">%/%</span> <span class="fu">months</span>(<span class="dv">1</span>)</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(num_months <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    rate <span class="ot">&lt;-</span> <span class="dv">100</span><span class="sc">/</span>num_months</span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>num_months) {</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>      curr_row<span class="sc">$</span>date <span class="ot">&lt;-</span> start <span class="sc">%m+%</span> <span class="fu">months</span>(j)</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>      curr_row<span class="sc">$</span>project_left <span class="ot">&lt;-</span> <span class="fu">if_else</span>(j <span class="sc">==</span> num_months,</span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>                                     <span class="dv">0</span>,</span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>                                     (num_months <span class="sc">-</span> j)<span class="sc">*</span>rate)</span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>      project_data[<span class="fu">nrow</span>(project_data) <span class="sc">+</span> <span class="dv">1</span>,] <span class="ot">=</span> curr_row</span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>dates <span class="ot">&lt;-</span> <span class="fu">as.character</span>(<span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"2015-01-01"</span>), <span class="fu">as.Date</span>(<span class="st">"2024-08-01"</span>), <span class="at">by=</span><span class="st">"months"</span>))</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Adding extra rows for each month, with completetion % estimate</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(num_months <span class="sc">&gt;</span> <span class="dv">0</span>) {</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    rate <span class="ot">&lt;-</span> <span class="dv">100</span><span class="sc">/</span>num_months</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>num_months) {</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>      curr_row<span class="sc">$</span>date <span class="ot">&lt;-</span> start <span class="sc">%m+%</span> <span class="fu">months</span>(j)</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>      curr_row<span class="sc">$</span>project_left <span class="ot">&lt;-</span> <span class="fu">if_else</span>(j <span class="sc">==</span> num_months,</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>                                     <span class="dv">0</span>,</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>                                     (num_months <span class="sc">-</span> j)<span class="sc">*</span>rate)</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>      project_data[<span class="fu">nrow</span>(project_data) <span class="sc">+</span> <span class="dv">1</span>,] <span class="ot">=</span> curr_row</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>grab_ajt <span class="ot">&lt;-</span> <span class="cf">function</span>(line_name, date) {</span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>  ajt <span class="ot">&lt;-</span> journey_data <span class="sc">%&gt;%</span> </span>
-<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(month <span class="sc">==</span> date) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(line <span class="sc">==</span> line_name) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(ajt)</span>
-<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(ajt) <span class="sc">==</span> <span class="dv">0</span>) {</span>
-<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>    ajt <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(ajt)</span>
-<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>add_new_row <span class="ot">&lt;-</span> <span class="cf">function</span>(line_combo, ajt_val) {</span>
-<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="sc">%&gt;%</span> </span>
-<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_row</span>(<span class="at">month =</span> date,</span>
-<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>            <span class="at">line =</span> line_combo,</span>
-<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>            <span class="at">ajt =</span> ajt_val)</span>
-<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (date <span class="cf">in</span> dates) {</span>
-<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>  ajts <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="at">.x =</span> <span class="fu">list</span>(<span class="at">B =</span> <span class="st">"B"</span>, <span class="at">D =</span> <span class="st">"D"</span>, <span class="at">FF =</span> <span class="st">"F"</span>, <span class="at">M =</span> <span class="st">"M"</span>, <span class="at">N =</span> <span class="st">"N"</span>, <span class="at">Q =</span> <span class="st">"Q"</span>, </span>
-<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>                   <span class="at">R =</span> <span class="st">"R"</span>, <span class="at">A =</span> <span class="st">"A"</span>, <span class="at">C =</span> <span class="st">"C"</span>, <span class="at">W =</span> <span class="st">"W"</span>, <span class="at">E =</span> <span class="st">"E"</span>, <span class="at">l1 =</span> <span class="st">"1"</span>,</span>
-<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>                   <span class="at">l2 =</span> <span class="st">"2"</span>, <span class="at">l3 =</span> <span class="st">"3"</span>, <span class="at">l4 =</span> <span class="st">"4"</span>, <span class="at">l5 =</span> <span class="st">"5"</span>, <span class="at">l6 =</span> <span class="st">"6"</span>), </span>
-<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>              <span class="at">.f =</span> grab_ajt,</span>
-<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>              date)</span>
-<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"B-D"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>B, ajts<span class="sc">$</span>D))</span>
-<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"B-D-F-M"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>B, ajts<span class="sc">$</span>D, ajts<span class="sc">$</span>FF, ajts<span class="sc">$</span>M)) </span>
-<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-Q-R"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>Q, ajts<span class="sc">$</span>R)) </span>
-<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-Q"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>Q)) </span>
-<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-R"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>R)) </span>
-<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"F-M"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>FF, ajts<span class="sc">$</span>M)) </span>
-<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"A-C"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>A, ajts<span class="sc">$</span>C)) </span>
-<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"1-2-3"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>l1, ajts<span class="sc">$</span>l2, ajts<span class="sc">$</span>l3)) </span>
-<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"4-5-6"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>l4, ajts<span class="sc">$</span>l5, ajts<span class="sc">$</span>l6)) </span>
-<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-W"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>W)) </span>
-<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"2-3"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>l2, ajts<span class="sc">$</span>l3)) </span>
-<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"4-5"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>l4, ajts<span class="sc">$</span>l5))</span>
-<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"A-C-E"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>A, ajts<span class="sc">$</span>C, ajts<span class="sc">$</span>E)) </span>
-<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-Q-R-W"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>Q, ajts<span class="sc">$</span>R, ajts<span class="sc">$</span>W)) </span>
-<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-R-W"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>R, ajts<span class="sc">$</span>W))</span>
-<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"R-W"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>R, ajts<span class="sc">$</span>W))</span>
-<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>dates <span class="ot">&lt;-</span> <span class="fu">as.character</span>(<span class="fu">seq</span>(<span class="fu">as.Date</span>(<span class="st">"2015-01-01"</span>), <span class="fu">as.Date</span>(<span class="st">"2024-08-01"</span>), <span class="at">by=</span><span class="st">"months"</span>))</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a><span class="co"># Averaging out certain lines so AJT data corresponds to the line geo data</span></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>grab_ajt <span class="ot">&lt;-</span> <span class="cf">function</span>(line_name, date) {</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>  ajt <span class="ot">&lt;-</span> journey_data <span class="sc">%&gt;%</span> </span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(month <span class="sc">==</span> date) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(line <span class="sc">==</span> line_name) <span class="sc">%&gt;%</span> </span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>    <span class="fu">pull</span>(ajt)</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">length</span>(ajt) <span class="sc">==</span> <span class="dv">0</span>) {</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>    ajt <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(ajt)</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>add_new_row <span class="ot">&lt;-</span> <span class="cf">function</span>(line_combo, ajt_val) {</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="sc">%&gt;%</span> </span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>    <span class="fu">add_row</span>(<span class="at">month =</span> date,</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>            <span class="at">line =</span> line_combo,</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>            <span class="at">ajt =</span> ajt_val)</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (date <span class="cf">in</span> dates) {</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>  ajts <span class="ot">&lt;-</span> <span class="fu">map</span>(<span class="at">.x =</span> <span class="fu">list</span>(<span class="at">B =</span> <span class="st">"B"</span>, <span class="at">D =</span> <span class="st">"D"</span>, <span class="at">FF =</span> <span class="st">"F"</span>, <span class="at">M =</span> <span class="st">"M"</span>, <span class="at">N =</span> <span class="st">"N"</span>, <span class="at">Q =</span> <span class="st">"Q"</span>, </span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>                   <span class="at">R =</span> <span class="st">"R"</span>, <span class="at">A =</span> <span class="st">"A"</span>, <span class="at">C =</span> <span class="st">"C"</span>, <span class="at">W =</span> <span class="st">"W"</span>, <span class="at">E =</span> <span class="st">"E"</span>, <span class="at">l1 =</span> <span class="st">"1"</span>,</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>                   <span class="at">l2 =</span> <span class="st">"2"</span>, <span class="at">l3 =</span> <span class="st">"3"</span>, <span class="at">l4 =</span> <span class="st">"4"</span>, <span class="at">l5 =</span> <span class="st">"5"</span>, <span class="at">l6 =</span> <span class="st">"6"</span>), </span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>              <span class="at">.f =</span> grab_ajt,</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>              date)</span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"B-D"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>B, ajts<span class="sc">$</span>D))</span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"B-D-F-M"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>B, ajts<span class="sc">$</span>D, ajts<span class="sc">$</span>FF, ajts<span class="sc">$</span>M)) </span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-Q-R"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>Q, ajts<span class="sc">$</span>R)) </span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-Q"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>Q)) </span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-R"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>R)) </span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"F-M"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>FF, ajts<span class="sc">$</span>M)) </span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"A-C"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>A, ajts<span class="sc">$</span>C)) </span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"1-2-3"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>l1, ajts<span class="sc">$</span>l2, ajts<span class="sc">$</span>l3)) </span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"4-5-6"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>l4, ajts<span class="sc">$</span>l5, ajts<span class="sc">$</span>l6)) </span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-W"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>W)) </span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"2-3"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>l2, ajts<span class="sc">$</span>l3)) </span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"4-5"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>l4, ajts<span class="sc">$</span>l5))</span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"A-C-E"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>A, ajts<span class="sc">$</span>C, ajts<span class="sc">$</span>E)) </span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-Q-R-W"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>Q, ajts<span class="sc">$</span>R, ajts<span class="sc">$</span>W)) </span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"N-R-W"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>N, ajts<span class="sc">$</span>R, ajts<span class="sc">$</span>W))</span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>  journey_data <span class="ot">&lt;-</span> <span class="fu">add_new_row</span>(<span class="st">"R-W"</span>, <span class="fu">mean</span>(ajts<span class="sc">$</span>R, ajts<span class="sc">$</span>W))</span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Finally, we use shape data to be able to map the subway lines and the location of the projects in NYC.</p>
+<p>Finally, we import shape data so we can map NYC (5 on the home page) and the subway lines (6 on the home page) properly. This geographical data is appropriately combined with the datasets we created above in order to produce the final map later.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r basic code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>lines <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"nyc_subways/lines.shp"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading layer `lines' from data source 
-  `/Users/safiyasirota/Desktop/research/mta_challenge/nyc_subways/lines.shp' 
-  using driver `ESRI Shapefile'
-Simple feature collection with 742 features and 6 fields
-Geometry type: LINESTRING
-Dimension:     XY
-Bounding box:  xmin: -74.03088 ymin: 40.57559 xmax: -73.75541 ymax: 40.90312
-Geodetic CRS:  WGS84(DD)</code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r basic code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># We exclude Staten Island since there are no subway data there</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>nyc <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"nyc_base_map/nyc.shp"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(boro_name <span class="sc">!=</span> <span class="st">"Staten Island"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading layer `nyc' from data source 
-  `/Users/safiyasirota/Desktop/research/mta_challenge/nyc_base_map/nyc.shp' 
-  using driver `ESRI Shapefile'
-Simple feature collection with 5 features and 4 fields
-Geometry type: MULTIPOLYGON
-Dimension:     XY
-Bounding box:  xmin: -74.25559 ymin: 40.49613 xmax: -73.70001 ymax: 40.91553
-Geodetic CRS:  WGS84(DD)</code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r basic code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Turn the project data into a form that can be mapped</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>proj_locs <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(project_data, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"longitude"</span>, <span class="st">"latitude"</span>), </span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                      <span class="at">crs =</span> <span class="dv">4326</span>, <span class="at">agr =</span> <span class="st">"constant"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(date <span class="sc">&lt;=</span> <span class="st">"2024-08-01"</span>) <span class="sc">%&gt;%</span> </span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">as.factor</span>(date))</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine the AJT data with the geography of the lines so it can be mapped</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>line_data <span class="ot">&lt;-</span> lines <span class="sc">%&gt;%</span> </span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">line =</span> name) <span class="sc">%&gt;%</span> </span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(url, id, objectid, rt_symbol)) <span class="sc">%&gt;%</span> </span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(journey_data, <span class="at">by =</span> <span class="st">"line"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">date =</span> month) <span class="sc">%&gt;%</span> </span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">as.factor</span>(date))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r basic code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Importing geo data for subway lines</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>lines <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"nyc_subways/lines.shp"</span>)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Importing geo data for the base map of NYC</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Excluding Staten Island since there are no subway data there</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>nyc <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"nyc_base_map/nyc.shp"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(boro_name <span class="sc">!=</span> <span class="st">"Staten Island"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Turning the project data into a form that can be mapped</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>proj_locs <span class="ot">&lt;-</span> <span class="fu">st_as_sf</span>(project_data, <span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"longitude"</span>, <span class="st">"latitude"</span>), </span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>                      <span class="at">crs =</span> <span class="dv">4326</span>, <span class="at">agr =</span> <span class="st">"constant"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(date <span class="sc">&lt;=</span> <span class="st">"2024-08-01"</span>) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">as.factor</span>(date))</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Combining the AJT data with the geography of the lines so it can be mapped</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>line_data <span class="ot">&lt;-</span> lines <span class="sc">%&gt;%</span> </span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">line =</span> name) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(url, id, objectid, rt_symbol)) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(journey_data, <span class="at">by =</span> <span class="st">"line"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">date =</span> month) <span class="sc">%&gt;%</span> </span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">as.factor</span>(date))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -422,38 +399,47 @@ Geodetic CRS:  WGS84(DD)</code></pre>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r basic code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Making sure our final .gif includes all the frames</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_options</span>(<span class="at">facet.max =</span> <span class="dv">200</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the map</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>urb_anim <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(nyc) <span class="sc">+</span> </span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"white"</span>) <span class="sc">+</span> </span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(line_data) <span class="sc">+</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"ajt"</span>, <span class="at">lwd =</span> <span class="fl">3.5</span>, <span class="at">palette =</span> <span class="st">"heat"</span> ) <span class="sc">+</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_scale_intervals</span>(<span class="at">style =</span> <span class="st">"pretty"</span>) <span class="sc">+</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_facets_wrap</span>(<span class="at">by =</span> <span class="st">"date"</span>,</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(proj_locs) <span class="sc">+</span> </span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_symbols</span>(<span class="at">fill =</span> <span class="st">"category_description"</span>, <span class="at">size =</span> <span class="st">"project_left"</span>,</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill_alpha =</span> <span class="fl">0.5</span>, <span class="at">col_alpha =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span> </span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_facets_wrap</span>(<span class="at">by =</span> <span class="st">"date"</span>,</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>                 <span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>)</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_animation</span>(urb_anim, <span class="at">filename =</span> <span class="st">"urb_anim.gif"</span>, <span class="at">delay =</span> <span class="dv">30</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r basic code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Renaming variables in each dataset to format the map legend correctly</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>line_data_clean <span class="ot">&lt;-</span> line_data <span class="sc">%&gt;%</span> </span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">Additional journey time (mins)</span><span class="st">`</span> <span class="ot">=</span> ajt)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>proj_locs_clean <span class="ot">&lt;-</span> proj_locs <span class="sc">%&gt;%</span> </span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">category_description =</span> <span class="fu">str_to_title</span>(category_description)) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="st">`</span><span class="at">% of project left</span><span class="st">`</span> <span class="ot">=</span> project_left,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">Type of improvement</span><span class="st">`</span> <span class="ot">=</span> category_description)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Making sure our final .gif includes all the frames</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">tmap_options</span>(<span class="at">facet.max =</span> <span class="dv">200</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Creating the map</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>urb_anim <span class="ot">&lt;-</span> <span class="fu">tm_shape</span>(nyc) <span class="sc">+</span> </span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="co"># NYC base map</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>(<span class="at">fill =</span> <span class="st">"white"</span>) <span class="sc">+</span> </span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Subway lines, colored by AJT</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(line_data_clean) <span class="sc">+</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_lines</span>(<span class="at">col =</span> <span class="st">"Additional journey time (mins)"</span>, <span class="at">lwd =</span> <span class="fl">3.5</span>, <span class="at">palette =</span> <span class="st">"heat"</span>) <span class="sc">+</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_scale_intervals</span>(<span class="at">style =</span> <span class="st">"pretty"</span>) <span class="sc">+</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_facets_wrap</span>(<span class="at">by =</span> <span class="st">"date"</span>,</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>                 <span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Capital projects, colored by type, sized by completion</span></span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(proj_locs_clean) <span class="sc">+</span> </span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_symbols</span>(<span class="at">fill =</span> <span class="st">"Type of improvement"</span>, </span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>             <span class="at">size =</span> <span class="st">"% of project left"</span>,</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>             <span class="at">fill_alpha =</span> <span class="fl">0.5</span>, <span class="at">col_alpha =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_polygons</span>() <span class="sc">+</span> </span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_facets_wrap</span>(<span class="at">by =</span> <span class="st">"date"</span>,</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>                 <span class="at">nrow =</span> <span class="dv">1</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Legend features</span></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_layout</span>(<span class="at">legend.outside =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.outside.position =</span> <span class="st">'bottom'</span>,</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>            <span class="at">legend.title.fontface =</span> <span class="st">'bold'</span>)</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Save the gif (commented out to not overwrite current gif)</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="co"># tmap_animation(urb_anim, filename = "urb_anim.gif", delay = 27)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Creating frames</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Creating animation
-Animation saved to /Users/safiyasirota/Desktop/research/mta_challenge/urb_anim.gif </code></pre>
-</div>
 </div>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
